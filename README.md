@@ -5,14 +5,14 @@ Akgo is used for rapid development of RESTful APIs, web apps and backend service
 ## Directory Structure
 
 ```
-├── demo			// 根据Akgo编写的例程
-|	└── filesharer	// demo1: 静态文件上传下载服务器
-├── http			// HTTP框架
-|	├── errors		// 错误类型封装
-|	├── context.go	// HTTP上下文封装
-|	└── server.go	// 框架核心
-└── lib				// 模块、库
-	└── crypto		// 加解密模块
+├── demo            // 根据Akgo编写的例程
+|   └── filesharer  // demo1: 静态文件上传下载服务器
+├── http            // HTTP框架
+|   ├── errors      // 错误类型封装
+|   ├── context.go  // HTTP上下文封装
+|   └── server.go   // 框架核心
+└── lib             // 模块、库
+    └── crypto      // 加解密模块
 ```
 
 ## Quick Start

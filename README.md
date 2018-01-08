@@ -31,8 +31,8 @@ package main
 import "github.com/akzk/akgo/http"
 
 func main() {
-  server := http.NewServer()
-  server.Serve(8080)
+	server := http.NewServer()
+	server.Serve(8080)
 }
 ```
 
@@ -60,27 +60,27 @@ Congratulations！You've just built your first **akgo** app.
 
    ```
    func main() {
-     server := http.NewServer()
-     server.Get("/hello", sayhello)
-     server.Serve(8080)
+   	server := http.NewServer()
+   	server.Get("/hello", sayhello)
+   	server.Serve(8080)
    }
    ```
 
 2. define handler function
 
    ```go
-   func sayhello(context *Context) interface{} {
-     
-     params := struct {
+   func sayhello(context *http.Context) interface{} {
+
+   	params := struct {
    		UserName string `get:"username"`
-     }{}
-     
-     err := context.ParseURL(&params)
-     if err != nil {
-       return err
-     }
-     
-     return []byte("hello, "+params.UserName)
+   	}{}
+
+   	err := context.ParseURL(&params)
+   	if err != nil {
+   		return err
+   	}
+
+   	return []byte("hello, " + params.UserName)
    }
    ```
 
@@ -109,19 +109,19 @@ Congratulations！You've just built your first **akgo** app.
 2. define handler function
 
    ```go
-   func login(context *Context) interface{} {
-     
-     params := struct {
+   func login(context *http.Context) interface{} {
+
+   	params := struct {
    		UserName string `json:"username"`
-   		Passwd	 string `json:"passwd"`
-     }{}
-     
-     err := context.ParseBody(&params)
-     if er != nil {
-       return err
-     }
-     
-     return []byte("login successfully, " + pararms.Username)
+   		Passwd   string `json:"passwd"`
+   	}{}
+
+   	err := context.ParseBody(&params)
+   	if err != nil {
+   		return err
+   	}
+
+   	return []byte("login successfully, " + params.UserName)
    }
    ```
 
@@ -130,9 +130,12 @@ Congratulations！You've just built your first **akgo** app.
    this is a example
 
    ```
-   POST / HTTP/1.1
-   Host: localhost; Content-Type: application/x-www-form-urlencoded
-   {"username": "akzk", "passwd": "123456"}
+   POST /login HTTP/1.1
+   Host: 127.0.0.1:8080
+   Content-Type: application/x-www-form-urlencoded
+   Content-Length: 37
+
+   {"username":"akzk","passwd":"123456"}
    ```
 
 ### Download and Upload files

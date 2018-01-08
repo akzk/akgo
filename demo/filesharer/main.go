@@ -29,10 +29,9 @@ func main() {
 
 	// 启动服务
 	server := http.NewServer()
-	server.Base("/share")
-	server.Get("", listFiles)
+	server.Get("/share", listFiles)
 	server.Down("/files", shareDir)
-	server.Up("/upload", shareDir)
+	server.Up("/share/upload", shareDir)
 	server.Serve(port)
 }
 

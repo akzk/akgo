@@ -14,7 +14,6 @@ import (
 
 // Server 框架核心
 type Server struct {
-	base   string              // 所有注册URL的前部增加部分，减少重复填写
 	router map[string]HttpFunc // string: API(URL+method), HttpFunc: 处理函数
 	urls   []string            // 已注册的URL
 	upDirs map[string]string   // string: URL, string: upload dir
@@ -26,16 +25,10 @@ type HttpFunc func(context *Context) interface{}
 // NewServer 返回已初始化的Server类
 func NewServer() *Server {
 	s := &Server{}
-	s.base = ""
 	s.router = make(map[string]HttpFunc)
 	s.urls = []string{}
 	s.upDirs = make(map[string]string)
 	return s
-}
-
-// Base 为所有注册URL的增加前部，减少重复填写
-func (s *Server) Base(base string) {
-	s.base = base
 }
 
 // Get 注册支持GET模式的URL
@@ -75,7 +68,7 @@ func (s *Server) Up(pattern, target string) {
 	}
 
 	// 注册上传文件夹
-	s.upDirs[s.base+pattern] = target
+	s.upDirs[pattern] = target
 
 	// 注册URL
 	s.Post(pattern, s.receiveFile)
@@ -85,13 +78,13 @@ func (s *Server) Up(pattern, target string) {
 func (s *Server) Serve(port int) error {
 
 	// 首页默认返回hello
-	length := len(s.urls)
+	lastindex := len(s.urls) - 1
 	for index, url := range s.urls {
-		if url == s.base {
+		if url == "/" {
 			break
 		}
-		if index == length-1 {
-			s.Get("", func(context *Context) interface{} {
+		if index == lastindex {
+			s.Get("/", func(context *Context) interface{} {
 				return []byte("hello, welcome to akgo\n")
 			})
 		}
@@ -113,7 +106,6 @@ func (s *Server) checkDupliAPI(pattern, method string) {
 // handleFunc 完成API注册
 func (s *Server) handleFunc(method string, pattern string, handler HttpFunc) {
 
-	pattern = s.base + pattern
 	s.checkDupliAPI(pattern, method) // 重复注册api则报panic
 	s.router[pattern+method] = handler
 

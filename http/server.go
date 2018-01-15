@@ -8,8 +8,6 @@ import (
 	"os"
 	"strconv"
 	"time"
-
-	"github.com/akzk/akgo/http/errors"
 )
 
 // Server 框架核心
@@ -93,7 +91,7 @@ func (s *Server) Serve(port int) error {
 	return http.ListenAndServe(":"+strconv.Itoa(port), nil)
 }
 
-// checkDupliAPI 便利检查API是否重复注册，重复则panic
+// checkDupliAPI 遍历检查API是否重复注册，重复则panic
 func (s *Server) checkDupliAPI(pattern, method string) {
 	api := pattern + method
 	for _, url := range s.urls {
@@ -133,43 +131,32 @@ func (s *Server) workFunc(w http.ResponseWriter, r *http.Request) {
 	// URL匹配但method不匹配时会触发，即该URL上的该method未注册
 	handler, ok := s.router[r.URL.Path+r.Method]
 	if !ok {
-		context.RespondErr(errors.ErrMethodNotSupport)
+		context.SendErr(ErrMethodNotSupport)
 		return
 	}
 
 	// 分析处理函数的返回采取不同的封装措施，并在最后返回给客户端
 	result := handler(context)
 	if result != nil {
-		err, ok := result.(error)
-		if ok {
-			// 未注册的错误
-			context.RespondErr(errors.Err(err.Error()))
-			return
-		}
 
-		Err, ok := result.(*errors.Error)
-		if ok {
-			// 已注册错误类型
-			context.RespondErr(Err)
-			return
+		switch a := result.(type) {
+		case error:
+			context.SendErr(DefaultErr(a.Error()))
+		case *Error:
+			context.SendErr(a)
+		case []byte:
+			w.Write(a)
+		case *Response:
+			context.sendResponse(a)
+		default:
+			jbody, err := json.Marshal(a)
+			if err != nil {
+				context.SendErr(DefaultErr(err.Error()))
+			} else {
+				w.Write(jbody)
+			}
 		}
-
-		bs, ok := result.([]byte)
-		if ok {
-			// 字节数组输出，不做任何处理
-			w.Write(bs)
-			return
-		}
-
-		// 处理函数成功响应
-		jbody, err := json.Marshal(result)
-		if err != nil {
-			context.RespondErr(errors.Err(err.Error()))
-		}
-		w.Write(jbody)
 	}
-
-	// result 为nil时默认响应码200，包体为空，处理函数成功响应
 }
 
 func (s *Server) receiveFile(context *Context) interface{} {

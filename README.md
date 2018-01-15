@@ -148,3 +148,11 @@ Congratulations！You've just built your first **akgo** app.
    ```
 
    then, you can download file by "http://localhost:8080/download/path/to/file" and upload file by "http://localhost:8080/upload"
+
+### Return type in handler function
+
+1. error
+2. Error
+3. []byte
+4. Response
+5. struct

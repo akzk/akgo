@@ -8,14 +8,29 @@ import (
 	"reflect"
 	"strconv"
 
-	"github.com/akzk/akgo/http/errors"
-	"github.com/akzk/akgo/lib/crypto"
+	"github.com/akzk/akgo/module/crypto"
 )
 
 // Context 供请求处理函数使用的输入参数
 type Context struct {
 	R *http.Request
 	W http.ResponseWriter
+}
+
+// Response 响应报文
+type Response struct {
+	code    int               // http status code
+	headers map[string]string // 响应头部
+	body    []byte
+}
+
+// NewResponse 创建Response，一般在HttpFunc函数结尾使用
+// code, http status code
+// headers, http headers
+// msg, 简述
+// text, 详情
+func (c *Context) NewResponse(code int, headers map[string]string, body []byte) *Response {
+	return &Response{code, headers, body}
 }
 
 // ParseBody 定义了POST Body的解析方式
@@ -93,8 +108,8 @@ func (c *Context) ParseURL(dst interface{}) error {
 	return nil
 }
 
-// RespondErr 向客户端返回错误信息
-func (c *Context) RespondErr(err *errors.Error) {
+// SendErr 向客户端返回JSON格式的错误信息
+func (c *Context) SendErr(err *Error) {
 	c.W.WriteHeader(err.Code)
 
 	// 返回包体
@@ -105,4 +120,18 @@ func (c *Context) RespondErr(err *errors.Error) {
 
 	jbody, _ := json.Marshal(body)
 	c.W.Write(jbody)
+}
+
+func (c *Context) sendResponse(response *Response) {
+	c.W.WriteHeader(response.code)
+
+	if response.headers != nil {
+		for key, value := range response.headers {
+			c.W.Header().Add(key, value)
+		}
+	}
+
+	if response.body != nil {
+		c.W.Write(response.body)
+	}
 }
